@@ -17,8 +17,17 @@ dotenv.config();
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-// Initialize Database
-const db = new Database("vpn_security.db");
+// Initialize Database (writable path for Cloud Run / production)
+const dbDir = process.env.NODE_ENV === "production" ? "/tmp" : process.cwd();
+const dbPath = path.join(dbDir, "vpn_security.db");
+let db: Database.Database;
+
+try {
+  db = new Database(dbPath);
+} catch (err) {
+  console.warn("Failed to open SQLite at", dbPath, "falling back to /tmp/vpn_security.db:", err);
+  db = new Database("/tmp/vpn_security.db");
+}
 
 // Create tables with security in mind
 db.exec(`
