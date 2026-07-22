@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "Log": {
+      "title": "Log",
+      "description": "VPN connection or security alert log",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated operator"
+        },
+        "event": {
+          "type": "string",
+          "enum": [
+            "connection_start",
+            "connection_end",
+            "error",
+            "security_alert"
+          ],
+          "description": "Type of VPN network event"
+        },
+        "details": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Additional diagnostic details"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp generated on the server"
+        }
+      },
+      "required": [
+        "userId",
+        "event",
+        "details",
+        "timestamp"
+      ]
+    },
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "Operator preference configuration",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the authenticated operator"
+        },
+        "protocol": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Currently active security protocol"
+        },
+        "isDpiBypassEnabled": {
+          "type": "boolean",
+          "description": "Whether Deep Packet Inspection bypass is active"
+        },
+        "isPacketMorphingEnabled": {
+          "type": "boolean",
+          "description": "Active state of packet morphing"
+        },
+        "isTimingObfuscationEnabled": {
+          "type": "boolean",
+          "description": "Active state of timing obfuscation"
+        },
+        "isAlpnSpoofingEnabled": {
+          "type": "boolean",
+          "description": "Active state of ALPN spoofing"
+        },
+        "isChaffingEnabled": {
+          "type": "boolean",
+          "description": "Active state of chaffing"
+        },
+        "isMultiPathSimEnabled": {
+          "type": "boolean",
+          "description": "Active state of multi path simulation"
+        },
+        "isYoutubeOptimizerEnabled": {
+          "type": "boolean",
+          "description": "Active state of YouTube optimization"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last updated timestamp"
+        }
+      },
+      "required": [
+        "userId",
+        "protocol",
+        "isDpiBypassEnabled",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "users/{userId}/logs/{logId}": {
+      "schema": "Log",
+      "description": "VPN and security event logs for a specific operator"
+    },
+    "users/{userId}/settings/default": {
+      "schema": "UserSettings",
+      "description": "Active tunneling and bypass preferences for a specific operator"
+    }
+  }
+}

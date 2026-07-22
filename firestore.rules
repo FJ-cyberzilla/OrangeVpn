@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global safety net - Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Entity-specific validation helpers (Anti-Update-Gap)
+    function isValidLog(data) {
+      return data.keys().hasAll(['userId', 'event', 'details', 'timestamp'])
+        && data.keys().size() == 4
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.event is string
+        && data.event in ['connection_start', 'connection_end', 'error', 'security_alert']
+        && data.details is string
+        && data.details.size() <= 1024
+        && (data.timestamp is string || data.timestamp is timestamp);
+    }
+
+    function isValidUserSettings(data) {
+      return data.keys().hasAll([
+          'userId', 
+          'protocol', 
+          'isDpiBypassEnabled', 
+          'isPacketMorphingEnabled', 
+          'isTimingObfuscationEnabled', 
+          'isAlpnSpoofingEnabled', 
+          'isChaffingEnabled', 
+          'isMultiPathSimEnabled', 
+          'isYoutubeOptimizerEnabled', 
+          'updatedAt'
+        ])
+        && data.keys().size() == 10
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.protocol is string
+        && data.protocol.size() <= 100
+        && data.isDpiBypassEnabled is bool
+        && data.isPacketMorphingEnabled is bool
+        && data.isTimingObfuscationEnabled is bool
+        && data.isAlpnSpoofingEnabled is bool
+        && data.isChaffingEnabled is bool
+        && data.isMultiPathSimEnabled is bool
+        && data.isYoutubeOptimizerEnabled is bool
+        && (data.updatedAt is string || data.updatedAt is timestamp);
+    }
+
+    // 2. Logs Collection: Immutable audit trial logs
+    match /users/{userId}/logs/{logId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(logId) && isValidLog(incoming());
+      // Updates and Deletions are strictly forbidden to maintain audit integrity
+      allow update, delete: if false;
+    }
+
+    // 3. UserSettings Collection: User tunnel preference state
+    match /users/{userId}/settings/default {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserSettings(incoming());
+      allow update: if isOwner(userId) && isValidUserSettings(incoming()) && (
+        incoming().userId == existing().userId &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'protocol', 
+          'isDpiBypassEnabled', 
+          'isPacketMorphingEnabled', 
+          'isTimingObfuscationEnabled', 
+          'isAlpnSpoofingEnabled', 
+          'isChaffingEnabled', 
+          'isMultiPathSimEnabled', 
+          'isYoutubeOptimizerEnabled', 
+          'updatedAt'
+        ])
+      );
+      allow delete: if false; // Preferences should persist
+    }
+  }
+}
