@@ -1,4 +1,4 @@
-# This workflow uses actions that are not certified by GitHub.
+k# This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
 # documentation.
@@ -11,7 +11,7 @@
 # To use this basic workflow, you will need to complete the following setup steps:
 #
 # 1. The underlying Xanitizer, used in this workflow, needs a separate license file.
-#    Licenses are free of charge for open source projects and for educational usage.
+#    Licenses are free of charge fr open source projects and for educational usage.
 #    To get more information about the Xanitizer licenses and how to obtain a license file,
 #    please consult https://www.xanitizer.com/xanitizer-pricing/.
 #
@@ -70,9 +70,8 @@ jobs:
       # Compile the code for Java projects and get all libraries, e.g. via Maven
       # Please adapt, if your project uses another build system to compile Java source code.
       # Please comment out, if your project does not contain Java source code.
-      - name: Compile Java code
-        run: mvn -B compile
-
+    - name: Compile Java code
+  run: mvn -B compile -f path/to/pom.xml
       # Install all dependent libraries for JavaScript/TypeScript projects, e.g. via npm
       # Please adapt to run `npm install` in the correct directories.
       # Please adapt, if your project uses another package manager for getting JavaScript libraries.
