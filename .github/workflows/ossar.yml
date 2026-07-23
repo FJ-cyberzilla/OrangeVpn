@@ -30,11 +30,11 @@ jobs:
       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
     runs-on: windows-latest
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    # Ensure a compatible version of dotnet is installed.
+    # E- name: Run OSSAR
+  uses: github/ossar-action@v1
+  id: ossar
+  env:
+  GUARDIAN_DISABLE_ESLINT: 'true'nsure a compatible version of dotnet is installed.
     # The [Microsoft Security Code Analysis CLI](https://aka.ms/mscadocs) is built with dotnet v3.1.201.
     # A version greater than or equal to v3.1.201 of dotnet must be installed on the agent in order to run this action.
     # GitHub hosted runners already have a compatible version of dotnet installed and this step may be skipped.
