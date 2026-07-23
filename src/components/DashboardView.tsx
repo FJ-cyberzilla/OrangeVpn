@@ -97,6 +97,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   handleLogin,
   handleLogout,
 }) => {
+  const getSafeAvatarUrl = (avatarUrl: string | undefined): string | null => {
+    if (!avatarUrl) return null;
+    try {
+      const parsed = new URL(avatarUrl);
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        return null;
+      }
+      return parsed.toString();
+    } catch {
+      return null;
+    }
+  };
+
+  const safeAvatarUrl = getSafeAvatarUrl(currentUser?.avatar_url);
+
   // Real-time Latency Ping Monitor State
   const [currentPing, setCurrentPing] = React.useState<number | null>(null);
   const [pingHistory, setPingHistory] = React.useState<number[]>([]);
@@ -171,9 +186,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}>
           <div className="flex items-center gap-3">
             <div className="relative">
-              {currentUser ? (
+              {currentUser && safeAvatarUrl ? (
                 <img 
-                  src={currentUser.avatar_url} 
+                  src={safeAvatarUrl} 
                   alt="Operator avatar" 
                   referrerPolicy="no-referrer"
                   className="w-10 h-10 rounded-xl border border-emerald-500/50" 
